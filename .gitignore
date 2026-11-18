@@ -1,0 +1,17 @@
+# This workspace also contains unrelated notes and local agent state.
+/*
+!/.gitignore
+!/README.md
+!/交易回放机/
+!/交易回放机_需求策划.md
+!/交易回放机_工程技术规范.md
+!/交易回放机_首版功能概况.md
+!/魏神_XBTUSD_近两年逐笔成交.csv
+
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+node_modules/

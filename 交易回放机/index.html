@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在 BTC K 线上查看魏神的历史成交，逐笔回放并模拟交易。">
+  <meta name="theme-color" content="#111116">
+  <title>交易回放机</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="market-data.js"></script>
+  <script defer src="engine.js"></script>
+  <script defer src="chart.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <h1>交易回放机</h1>
+        <span class="top-divider"></span>
+        <span id="mode-label" class="mode-label"><i></i>历史交易</span>
+      </div>
+      <div class="top-actions">
+        <span id="data-period" class="data-period"></span>
+        <button id="source-button" class="button subtle" type="button">数据来源 <span aria-hidden="true">↗</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace-grid">
+    <section class="trading-workspace" aria-label="BTC 行情和交易">
+      <header class="market-header">
+        <div class="instrument">
+          <div class="bitcoin-icon" aria-hidden="true">₿</div>
+          <div><h2>BTC 永续</h2><p id="market-source">Binance BTCUSDT 行情</p></div>
+        </div>
+        <div class="market-quote">
+          <span id="main-price" class="main-price">—</span>
+          <span id="market-change" class="market-change mono"></span>
+        </div>
+        <div id="trader-tag" class="trader-tag">
+          <span class="trader-icon" aria-hidden="true">魏</span>
+          <span><strong>魏神 <small>Paul Wei</small></strong><span>BitMEX · XBTUSD</span></span>
+        </div>
+      </header>
+
+      <div class="chart-toolbar">
+        <div class="timeframes" role="group" aria-label="K 线周期">
+          <button class="timeframe" data-timeframe="1m" type="button">1分</button>
+          <button class="timeframe" data-timeframe="1h" type="button">1时</button>
+          <button class="timeframe" data-timeframe="1d" type="button">日线</button>
+          <button class="timeframe" data-timeframe="1w" type="button">周线</button>
+        </div>
+        <div class="chart-range">
+          <button id="previous-range" class="button square" type="button" aria-label="上一区间" title="上一区间">‹</button>
+          <span id="range-label" class="mono"></span>
+          <button id="next-range" class="button square" type="button" aria-label="下一区间" title="下一区间">›</button>
+          <label id="date-label" class="date-picker" title="跳转日期">
+            <span aria-hidden="true">▦</span><input id="go-date" type="date" aria-label="跳转日期">
+          </label>
+          <button id="fit-range" class="button square fit-range" type="button" title="恢复默认缩放" aria-label="恢复默认缩放">⤢</button>
+        </div>
+      </div>
+
+      <div class="chart-window" id="chart-window">
+        <div class="chart-meta">
+          <div class="ohlc mono" id="ohlc" aria-hidden="true"></div>
+          <div class="chart-legend"><span><i class="buy"></i>Buy</span><span><i class="sell"></i>Sell</span><span id="legend-extra" hidden></span></div>
+        </div>
+        <canvas id="chart" aria-label="BTC K 线和成交标记。可通过下方成交历史表查看逐笔成交。"></canvas>
+        <div id="chart-notice" class="chart-notice" role="status">正在载入历史行情…</div>
+        <div id="marker-popover" class="marker-popover" hidden></div>
+      </div>
+
+      <div id="mode-controls"></div>
+
+      <section class="ledger" aria-label="账户面板">
+        <div class="ledger-navigation">
+          <div class="ledger-tabs" role="group" aria-label="账户信息">
+            <button type="button" data-ledger="position">持仓</button>
+            <button type="button" data-ledger="orders">挂单</button>
+            <button type="button" data-ledger="fills">成交历史</button>
+          </div>
+          <span id="snapshot-time" class="snapshot-time mono"></span>
+        </div>
+        <dl id="account-summary" class="account-summary"></dl>
+        <div id="account-content" class="account-content"></div>
+      </section>
+    </section>
+
+    <aside class="inspector" aria-label="交易助手与模拟报告">
+      <div class="inspector-header">
+        <div class="assistant-icon" aria-hidden="true">✧</div>
+        <div class="inspector-name"><h2>交易助手</h2><p>本地数据解读</p></div>
+        <span class="local-badge"><i></i>离线演示</span>
+      </div>
+      <div id="inspector-tabs" class="inspector-tabs" hidden></div>
+      <div id="inspector-body" class="inspector-body">
+        <div id="conversation" class="conversation" aria-live="polite"></div>
+        <form id="compose" class="compose">
+          <div id="references" class="reference-chips" hidden></div>
+          <div class="compose-box">
+            <label class="sr-only" for="question">向交易助手提问</label>
+            <textarea id="question" name="question" rows="2" placeholder="选择一笔成交，或直接提问…"></textarea>
+            <button id="send-message" type="submit" class="send-button" aria-label="发送提问" title="发送提问">↑</button>
+          </div>
+          <p class="compose-help">根据当前可见的记录解读</p>
+        </form>
+      </div>
+      <div id="report" class="report" hidden></div>
+    </aside>
+  </main>
+
+  <div id="notice" class="toast" role="status" hidden></div>
+
+  <dialog id="source-dialog" class="dialog">
+    <div class="dialog-heading"><h2>数据来源</h2><button class="button square" type="button" data-close-dialog="source-dialog" aria-label="关闭">×</button></div>
+    <div id="source-details" class="dialog-content"></div>
+  </dialog>
+
+  <dialog id="exit-dialog" class="dialog">
+    <div class="dialog-heading"><h2>退出这轮模拟？</h2></div>
+    <div class="dialog-content"><p>本轮练习将结束。要查看与魏神的对比，可以继续练习并点击「结算」。</p></div>
+    <div class="dialog-actions">
+      <button class="button" type="button" data-close-dialog="exit-dialog">继续模拟</button>
+      <button class="button primary" id="confirm-exit" type="button">退出模拟</button>
+    </div>
+  </dialog>
+</body>
+</html>
